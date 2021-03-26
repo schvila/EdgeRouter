@@ -14,7 +14,7 @@ namespace SshExeConsole
         {
             get
             {
-                var dir = Path.Combine(Assembly.GetExecutingAssembly().Location,"DevLog");
+                var dir = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),"DevLog");
                 Directory.CreateDirectory(dir);
                 return dir;
             }
@@ -31,7 +31,7 @@ namespace SshExeConsole
 
         public void Write(string text)
         {
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter(FileName, true))
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(LogPathName, true))
             {
                 file.WriteLine(text);
             }

@@ -15,8 +15,15 @@ namespace SshExeConsole
         {
             try
             {
-                TestCommander();
-                //PuTTYConnect();
+                PortConfiguration orgcfg = ReadConfig();
+                //PortConfiguration newcfg = new PortConfiguration()
+                //{
+                //    IP = "192.168.1.80",
+                //    Port = "24",
+                //    Server = "192.168.1.1",
+                //    Gateway = "192.168.1.1",
+                //};
+                //WriteConfig(orgcfg, newcfg);
             }
             catch (Exception ex)
             {
@@ -29,6 +36,32 @@ namespace SshExeConsole
             }
         }
 
+
+        static PortConfiguration ReadConfig()
+        {
+            ProcessCommander pcom = new ProcessCommander();
+            
+            var res = pcom.Run(PortConfiguration.ConfigReadCommands, 300);
+            // get address
+            PortConfiguration pcfg = new PortConfiguration(res);
+
+            //Console.WriteLine(res);
+            Console.WriteLine(pcfg.ToString());
+            return pcfg;
+        }
+
+        static void WriteConfig(PortConfiguration orgport, PortConfiguration newport)
+        {
+            var cmdList = newport.PrepareConfigWriteCommands(orgport);
+            if(cmdList.Count == 0)
+                return;
+            ProcessCommander pcom = new ProcessCommander();
+
+            var res = pcom.Run(cmdList, 1000);
+            Console.WriteLine(res);
+
+        }
+        #region obsolette tests
         private static void ShowCmd()
         {
             Console.WriteLine("cmd.exe test");
@@ -87,14 +120,14 @@ namespace SshExeConsole
                 stderrThread.Start();
                 //process.BeginOutputReadLine();
                 //string s1, s2 = String.Empty;
-                
+
                 while (true)
                 {
                     //s1 = process.StandardOutput.ReadToEnd();
                     //Console.WriteLine(t);
                     Console.WriteLine("Enter command:");
                     string cmd = Console.ReadLine();
-                    if(string.IsNullOrEmpty(cmd))
+                    if (string.IsNullOrEmpty(cmd))
                         break;
                     process.StandardInput.WriteLine(cmd);
                     process.StandardInput.WriteLine("");
@@ -153,17 +186,6 @@ namespace SshExeConsole
                 }
             }
         }
-
-        static void TestCommander()
-        {
-            ProcessCommander pcom = new ProcessCommander();
-            
-            var res = pcom.Run(PortConfiguration.GetConfigCommands, 300);
-            // get address
-            PortConfiguration pcfg = new PortConfiguration(res);
-
-            //Console.WriteLine(res);
-            Console.WriteLine(pcfg.ToString());
-        }
+#endregion obsolette
     }
 }
