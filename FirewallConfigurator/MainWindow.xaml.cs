@@ -22,8 +22,8 @@ namespace FirewallConfigurator
     {
         public MainWindow()
         {
-            InitializeComponent();
             Status = "Connecting";
+            InitializeComponent();
         }
         public string IpText { get; set; }
         public string Status { get; set; }

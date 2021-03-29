@@ -50,8 +50,6 @@ namespace SshExeConsole
 
         public string Gateway { get; set; }
 
-        private string _cmdResult;
-
         public List<string> PrepareConfigWriteCommands(PortConfiguration org)
         {
             List<string> sl = new List<string>();
@@ -105,13 +103,15 @@ namespace SshExeConsole
         public PortConfiguration(){}
         public PortConfiguration(string cmdResult)
         {
-            _cmdResult = cmdResult;
             Parse(cmdResult);
         }
 
+        // name-server, gateway-address
         private readonly Regex _addressRegex = new Regex(@"(?<==\saddress\s).*(?=\n)", RegexOptions.Multiline);
-        private readonly Regex _serverRegex = new Regex(@"(?<=name-server\s)((?!is empty).)*(?=\n)", RegexOptions.Multiline);
-        private readonly Regex _gatewayRegex = new Regex(@"(?<=gateway-address\s)((?!is empty).)*(?=\n)", RegexOptions.Multiline);
+        //private readonly Regex _serverRegex = new Regex(@"(?<=name-server\s)((?!is empty).)*(?=\n)", RegexOptions.Multiline);
+        private readonly Regex _serverRegex = new Regex(@"(?<==\sname-server\s).*(?=\n)", RegexOptions.Multiline);
+        //private readonly Regex _gatewayRegex = new Regex(@"(?<=gateway-address\s)((?!is empty).)*(?=\n)", RegexOptions.Multiline);
+        private readonly Regex _gatewayRegex = new Regex(@"(?<==\sgateway-address\s).*(?=\n)", RegexOptions.Multiline);
         public void Parse(string txt)
         {
             var address = RegexVal(_addressRegex, txt);

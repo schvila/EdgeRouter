@@ -28,8 +28,8 @@
                 <ColumnDefinition Width="150"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <RadioButton  Grid.Row="0" IsChecked="True" Grid.Column="0" Name="typeDhcp" GroupName="ConnectionType" FontWeight="Bold" Click="typeDhcp_Click">DHCP</RadioButton>
-            <RadioButton Grid.Row="1" Grid.Column="0" Name="typeStaticIP" GroupName="ConnectionType" FontWeight="Bold" Click="typeStaticIP_Click">Static IP </RadioButton>
+            <RadioButton  Grid.Row="0" IsChecked="False" Grid.Column="0" Name="typeDhcp" GroupName="ConnectionType" FontWeight="Bold" Click="typeDhcp_Click">DHCP</RadioButton>
+            <RadioButton Grid.Row="1" IsChecked="True" Grid.Column="0" Name="typeStaticIP" GroupName="ConnectionType" FontWeight="Bold" Click="typeStaticIP_Click">Static IP </RadioButton>
             <Grid Grid.Row="1" Grid.Column="1" Name="gridStatic" Visibility="Visible">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -47,21 +47,7 @@
 
                 </Grid>
             </Grid>
-            <Label Grid.Row="2" Name="lblStatus" Content="{Binding Status, Mode=OneWay}"></Label>
-
-
         </Grid>
-
-        <!--<StackPanel>
-            <RadioButton GroupName="ConnectionType">DHCP</RadioButton>
-            <RadioButton GroupName="ConnectionType">
-                <StackPanel>
-                    <Label>Static IP</Label>
-                    <Expander IsExpanded="False">
-                        <TextBlock>static ip exp</TextBlock>
-                    </Expander>
-                </StackPanel>
-            </RadioButton>
-        </StackPanel>-->
+        <Label Grid.Row="2" Name="lblStatus" Content="{Binding Status, Mode=OneWay}"></Label>
     </Grid>
 </Window>
