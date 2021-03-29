@@ -36,6 +36,9 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="150"/>
@@ -43,11 +46,17 @@
                     </Grid.ColumnDefinitions>
                     <Label Grid.Row="0" Grid.Column="0">Address: </Label>
                     <uc:IPControl Grid.Row="0" Grid.Column="1" Height="25" Width="100" Text="{Binding IpText, Mode=TwoWay}"></uc:IPControl>
+                    <Label Grid.Row="1" Grid.Column="0">Port:</Label>
+                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Port}"></TextBox>
+                    <Label Grid.Row="2" Grid.Column="0">Server:</Label>
+                    <uc:IPControl Grid.Row="2" Grid.Column="1" Height="25" Width="100" Text="{Binding Server, Mode=TwoWay}"></uc:IPControl>
+                    <Label Grid.Row="3" Grid.Column="0">Gateway:</Label>
+                    <uc:IPControl Grid.Row="3" Grid.Column="2" Height="25" Width="100" Text="{Binding Gateway, Mode=TwoWay}"></uc:IPControl>
 
 
                 </Grid>
             </Grid>
         </Grid>
-        <Label Grid.Row="2" Name="lblStatus" Content="{Binding Status, Mode=OneWay}"></Label>
+        <Label Grid.Row="2" Name="lblStatus" Content="{Binding Status}"></Label>
     </Grid>
 </Window>
