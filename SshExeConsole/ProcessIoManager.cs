@@ -151,7 +151,7 @@ namespace SshExeConsole
             }
         }
         #endregion
-        private readonly DevLog _procmanLog = new DevLog("ProcMan.log");
+        private readonly DevLog _procmanLog = new DevLog("ProcMan.log",false);
         #region Private_Methods
         /// <summary>
         /// Checks for valid (non-null Process), and optionally check to see if the process has exited.
@@ -284,6 +284,15 @@ namespace SshExeConsole
                 // The Read() method will block until something is available
                 while (runningProcess != null && (ch = runningProcess.StandardError.Read()) > -1)
                     ReadStream(ch, runningProcess.StandardError, false);
+            }
+            catch (ThreadAbortException)
+            {
+                if (StderrTextRead != null)
+                {   // Send notificatin of text read from stderr
+                    StderrTextRead($"{streambuffer.ToString()}{Environment.NewLine} ThreadAbortException.");
+                    streambuffer.Clear();
+                }
+
             }
             catch (Exception ex)
             {

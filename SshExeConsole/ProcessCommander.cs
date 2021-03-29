@@ -28,56 +28,87 @@ namespace SshExeConsole
         {
             using (var proc = Process.Start(_cmdExeProcessStartInfo))
             {
-                StringBuilder sb = new StringBuilder(256);
                 var procManager = new ProcessIoManager(proc);
                 procManager.StdoutTextRead += OnTextRead;
+                procManager.StderrTextRead += OnErroRead;
                 //    (txt) =>
                 //{
                 //    var scReplace = txt.Replace("\r", "");
                 //    sb.Append(scReplace);
                 //};
                 procManager.StartProcessOutputRead();
-
-                // Linux connect
-                procManager.WriteStdin(ConInfo.Connection);
-                Thread.Sleep(sleep);
-                if (sb.Length > 0)
+                try
                 {
-                    Console.WriteLine(sb.ToString());
-                    sb.Clear();
-                }
-
-                procType = ProcesType.Command;
-                foreach (var cmd in cmdList)
-                {
-                    procManager.WriteStdin(cmd);
+                    // Router connect
+                    procType = ProcesType.Logon;
+                    procManager.WriteStdin(ConInfo.Connection);
                     Thread.Sleep(sleep);
+                    if (!LogonFailed())
+                    {
+                        procType = ProcesType.Command;
+                        foreach (var cmd in cmdList)
+                        {
+                            procManager.WriteStdin(cmd);
+                            Thread.Sleep(sleep);
+                        }
+
+                        procType = ProcesType.Logon;
+
+                        procManager.WriteStdin("exit");
+                    }
                 }
-                procType = ProcesType.Logon;
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.ToString());
+                }
+                finally
+                {
+                    procManager.StdoutTextRead -= OnTextRead;
+                    procManager.StderrTextRead -= OnErroRead;
 
-                procManager.WriteStdin("exit");
-                procManager.StdoutTextRead -= OnTextRead;
-                procManager.StopMonitoringProcessOutput(true);
-                Thread.Sleep(500);
-
-                proc.Close();
-
+                    procManager.StopMonitoringProcessOutput(true);
+                    Thread.Sleep(500);
+                    proc.Close();
+                }
             }
-
             WriteToDevLog();
             return CmdResult;
         }
-        private Regex _rxEol = new Regex(@"([\u001B]+\[[m])|([\u001B])", RegexOptions.Multiline);
-        public string CmdResult => _rxEol.Replace(_sbcmd.ToString(), "");
 
-        private readonly DevLog _cmdLog = new DevLog("Cmd.log");
-        private readonly DevLog _cmdLogEscaped = new DevLog("CmdEscaped.log");
-        private readonly DevLog _logonLog = new DevLog("Login.log");
+        private bool LogonFailed()
+        {
+            if ((_sberror.Length > 0 && _sberror.ToString().Contains("FATAL ERROR")) || !_sblogon.ToString().Contains(ConInfo.User))
+                logonError = "Logon failed";
+
+            return !string.IsNullOrEmpty(logonError);
+        }
+        private Regex _rxEol = new Regex(@"([\u001B]+\[[m])|([\u001B])", RegexOptions.Multiline);
+        private string logonError = string.Empty;
+        public string CmdResult
+        {
+            get
+            {
+                if(!string.IsNullOrEmpty(logonError))
+                    return logonError;
+                return _rxEol.Replace(_sbcmd.ToString(), "");
+            }
+        }
+
+        
+
+        private readonly DevLog _cmdLog = new DevLog("Cmd.log", false);
+        private readonly DevLog _cmdLogEscaped = new DevLog("CmdEscaped.log", true);
+        private readonly DevLog _logonLog = new DevLog("Login.log", false);
         private void WriteToDevLog()
         {
             _cmdLog.Write(_sbcmd.ToString());
             _logonLog.Write(_sblogon.ToString());
             _cmdLogEscaped.Write(CmdResult);
+            if (_sberror.Length > 0)
+            {
+                DevLog errLog = new DevLog("Error.log", false);
+                errLog.Write(_sberror.ToString());
+            }
         }
 
         private ProcesType procType = ProcesType.Logon;
@@ -89,7 +120,14 @@ namespace SshExeConsole
         }
         private readonly StringBuilder _sbcmd = new StringBuilder(256);
         private readonly StringBuilder _sblogon = new StringBuilder(256);
+        private readonly StringBuilder _sberror = new StringBuilder(256);
 
+        private void OnErroRead(string text)
+        {
+            var scReplace = text.Replace("\r", "");
+            _sberror.Append(scReplace);
+
+        }
         private void OnTextRead(string text)
         {
             var scReplace = text.Replace("\r", "");

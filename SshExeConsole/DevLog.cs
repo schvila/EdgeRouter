@@ -24,9 +24,13 @@ namespace SshExeConsole
 
         private DevLog(){}
 
-        public DevLog(string fname)
+        public DevLog(string fname, bool clear)
         {
             FileName = fname;
+            if (clear && File.Exists(LogPathName))
+            {
+                File.Delete(LogPathName);
+            }
         }
 
         public void Write(string text)
