@@ -55,6 +55,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Service\DevLog.cs" />
+    <Compile Include="Service\PortConfigurator.cs" />
+    <Compile Include="Service\ProcessIO.cs" />
+    <Compile Include="Service\ProcessManager.cs" />
+    <Compile Include="Service\RouterCommands.cs" />
+    <Compile Include="Service\RouterConfiguration.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

@@ -15,6 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using JetBrains.Utility;
+using FirewallConfigurator.Service;
 
 namespace FirewallConfigurator
 {
@@ -23,6 +24,10 @@ namespace FirewallConfigurator
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
+        private RouterConfiguration OriginalConfiguration { get; set; }
+        private RouterConfiguration CurrentConfiguration { get; set; }
+        private static RouterCommands _commands = new RouterCommands();
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         [NotifyPropertyChangedInvocator]
@@ -31,22 +36,38 @@ namespace FirewallConfigurator
 
         public MainWindow()
         {
+            this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             InitializeComponent();
             Loaded += MainWindow_Loaded;
         }
+
+        public override void BeginInit()
+        {
+            base.BeginInit();
+            Status = "Connecting";
+            OriginalConfiguration = _commands.GetConfiguration();
+            CurrentConfiguration = new RouterConfiguration(OriginalConfiguration);
+            Status = "Ready";
+        }
+
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= MainWindow_Loaded;
 
-            // get configuration
-            Status = "Connecting";
-            IsDPHC = false;
             UpdateUIOnConfig();
-
         }
+        
+        public bool IsDPHC => CurrentConfiguration == null ? false : CurrentConfiguration.IsDhcp;
 
-        public bool IsDPHC { get; set; }
-        public string IpText { get; set; }
+        public string IP 
+        { 
+            get => CurrentConfiguration == null ? "" : CurrentConfiguration.IP;
+            set
+            {
+                CurrentConfiguration.IP = value;
+                RaisePropertyChanged();
+            }
+        }
 
         private string _status;
 
@@ -56,17 +77,54 @@ namespace FirewallConfigurator
             set
             {
                 _status = value;
-                RaisePropertyChanged(nameof(Status));
+                RaisePropertyChanged();
             }
         }
-        public string Port { get; set; }
-        public string Server { get; set; }
-        public string Gateway { get; set; }
+
+        public string Port
+        {
+            get => CurrentConfiguration.Port;
+            set
+            {
+                CurrentConfiguration.Port = value;
+                RaisePropertyChanged();
+                RaisePropertyChanged(nameof(ConfigChanged));
+            }
+        }
+        private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
+        {
+            int val;
+
+            e.Handled = !((int.TryParse(e.Text, out val) && val >= 0));
+        }
+        public string Server 
+        {
+            get => CurrentConfiguration.Server;
+            set
+            {
+                CurrentConfiguration.Server = value;
+                RaisePropertyChanged();
+                RaisePropertyChanged(nameof(ConfigChanged));
+            }
+        }
+        public string Gateway
+        {
+            get => CurrentConfiguration.Gateway;
+            set
+            {
+                CurrentConfiguration.Gateway = value;
+                RaisePropertyChanged();
+                RaisePropertyChanged(nameof(ConfigChanged));
+            }
+        }
+
+        public bool ConfigChanged => CurrentConfiguration.ToString() != OriginalConfiguration.ToString();
+
 
         private void typeDhcp_Click(object sender, RoutedEventArgs e)
         {
             //gridStatic.Visibility = Visibility.Hidden;
-            IsDPHC = true;
+            CurrentConfiguration.Address = "dhcp";
             UpdateUIOnConfig();
 
         }
@@ -74,7 +132,7 @@ namespace FirewallConfigurator
         private void typeStaticIP_Click(object sender, RoutedEventArgs e)
         {
             //gridStatic.Visibility = Visibility.Visible;
-            IsDPHC = false;
+            CurrentConfiguration.Address = "";
             UpdateUIOnConfig();
 
         }
@@ -93,6 +151,17 @@ namespace FirewallConfigurator
                 typeDhcp.IsChecked = false;
                 typeStaticIP.IsChecked = true;
             }
+            RaisePropertyChanged(nameof(ConfigChanged));
+        }
+
+        private async void _btnStore_OnClick(object sender, RoutedEventArgs e)
+        {
+            Status = "Storing";
+
+            await Task.Run(()=> _commands.WriteConfiguration(OriginalConfiguration, CurrentConfiguration));
+            OriginalConfiguration = new RouterConfiguration(CurrentConfiguration);
+            RaisePropertyChanged(nameof(ConfigChanged));
+            Status = "Ready";
         }
     }
 }

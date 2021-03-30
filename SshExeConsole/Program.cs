@@ -18,15 +18,17 @@ namespace SshExeConsole
             {
                 var orgcfg = _commands.GetConfiguration();
                 Console.WriteLine(orgcfg.ToString());
-                RouterConfiguration newcfg = new RouterConfiguration()
-                {
-                    IP = "192.168.1.80",
-                    Port = "24",
-                    Server = "192.168.1.1",
-                    Gateway = "192.168.1.1",
-                };
-                var res = _commands.WriteConfiguration(orgcfg, newcfg);
-                Console.WriteLine(res);
+                RouterConfiguration bakCfg = orgcfg;
+                Console.WriteLine($"bak: {bakCfg.ToString()}");
+                //RouterConfiguration newcfg = new RouterConfiguration()
+                //{
+                //    IP = "192.168.1.80",
+                //    Port = "24",
+                //    Server = "192.168.1.1",
+                //    Gateway = "192.168.1.1",
+                //};
+                //var res = _commands.WriteConfiguration(orgcfg, newcfg);
+                //Console.WriteLine(res);
             }
             catch (Exception ex)
             {
