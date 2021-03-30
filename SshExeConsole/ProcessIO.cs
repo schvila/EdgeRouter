@@ -40,7 +40,7 @@ namespace SshExeConsole
     /// to read standard output from the process, and the Process.RedirectStandardError
     /// must be set to true to read standard error.
     /// </summary>
-    public class ProcessIoManager
+    public class ProcessIO
     {
         #region Private_Fields
         // Command line process that is executing and being
@@ -77,7 +77,7 @@ namespace SshExeConsole
 
         #region Constructor_And_Initialization
         /// <summary>
-        /// Initializes a new instance of the <see cref="ProcessIoManager"/> class.        
+        /// Initializes a new instance of the <see cref="ProcessIO"/> class.        
         /// </summary>
         /// <param name="process">The process.</param>
         /// <remarks>
@@ -85,7 +85,7 @@ namespace SshExeConsole
         /// Call StartProcessOutputRead() to begin listening for process output.
         /// </remarks>
         /// <seealso cref="StartProcessOutputRead"/>
-        public ProcessIoManager(Process process)
+        public ProcessIO(Process process)
         {            
             if (process == null)
                 throw new Exception("ProcessIoManager unable to set running process - null value is supplied");

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace SshExeConsole
 {
-    public class ProcessCommander
+    public class ProcessManager
     {
         public ConnectInfo ConInfo { get; set; } = new ConnectInfo();
 
@@ -28,7 +28,7 @@ namespace SshExeConsole
         {
             using (var proc = Process.Start(_cmdExeProcessStartInfo))
             {
-                var procManager = new ProcessIoManager(proc);
+                var procManager = new ProcessIO(proc);
                 procManager.StdoutTextRead += OnTextRead;
                 procManager.StderrTextRead += OnErroRead;
                 //    (txt) =>

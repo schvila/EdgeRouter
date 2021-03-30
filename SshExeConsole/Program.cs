@@ -11,19 +11,22 @@ namespace SshExeConsole
 {
     class Program
     {
+        private static RouterCommands _commands = new RouterCommands();
         static void Main(string[] args)
         {
             try
             {
-                PortConfiguration orgcfg = ReadConfig();
-                //PortConfiguration newcfg = new PortConfiguration()
-                //{
-                //    IP = "192.168.1.80",
-                //    Port = "24",
-                //    Server = "192.168.1.1",
-                //    Gateway = "192.168.1.1",
-                //};
-                //WriteConfig(orgcfg, newcfg);
+                var orgcfg = _commands.GetConfiguration();
+                Console.WriteLine(orgcfg.ToString());
+                RouterConfiguration newcfg = new RouterConfiguration()
+                {
+                    IP = "192.168.1.80",
+                    Port = "24",
+                    Server = "192.168.1.1",
+                    Gateway = "192.168.1.1",
+                };
+                var res = _commands.WriteConfiguration(orgcfg, newcfg);
+                Console.WriteLine(res);
             }
             catch (Exception ex)
             {
@@ -37,30 +40,6 @@ namespace SshExeConsole
         }
 
 
-        static PortConfiguration ReadConfig()
-        {
-            ProcessCommander pcom = new ProcessCommander();
-            
-            var res = pcom.Run(PortConfiguration.ConfigReadCommands, 300);
-            // get address
-            PortConfiguration pcfg = new PortConfiguration(res);
-
-            //Console.WriteLine(res);
-            Console.WriteLine(pcfg.ToString());
-            return pcfg;
-        }
-
-        static void WriteConfig(PortConfiguration orgport, PortConfiguration newport)
-        {
-            var cmdList = newport.PrepareConfigWriteCommands(orgport);
-            if(cmdList.Count == 0)
-                return;
-            ProcessCommander pcom = new ProcessCommander();
-
-            var res = pcom.Run(cmdList, 1000);
-            Console.WriteLine(res);
-
-        }
         #region obsolette tests
         private static void ShowCmd()
         {
@@ -157,7 +136,7 @@ namespace SshExeConsole
             using (var process = Process.Start(psi))
             {
                 Console.WriteLine("Connecting...");
-                var processIoMgr = new ProcessIoManager(process);
+                var processIoMgr = new ProcessIO(process);
                 string cmdForConnect = @"c:\_putytool\plink.exe  schvila@192.168.202.128 -pw SCh*1108";
                 StringBuilder sb = new StringBuilder();
                 processIoMgr.StdoutTextRead += (txt) =>
