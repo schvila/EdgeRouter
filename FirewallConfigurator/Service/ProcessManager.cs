@@ -51,6 +51,12 @@ namespace FirewallConfigurator.Service
                     procType = ProcesType.Logon;
                     procManager.WriteStdin(ConInfo.Connection);
                     Thread.Sleep(logonSleep);
+                    if (logonSleep != sleep && EnterYes())
+                    {
+                        procManager.WriteStdin("y");
+                        Thread.Sleep(sleep);
+                    }
+
                     if (!LogonFailed())
                     {
                         procType = ProcesType.Command;
@@ -81,6 +87,14 @@ namespace FirewallConfigurator.Service
             }
             WriteToDevLog();
             return CmdResult;
+        }
+
+        private bool EnterYes()
+        {
+            // enter "y"
+            return (_sberror.Length > 0 && _sberror.ToString().Contains(@"enter ""y"""));
+
+
         }
 
         public bool ConnectionFailed { get; private set; } = false;

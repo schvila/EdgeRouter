@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -63,12 +64,14 @@ namespace FirewallConfigurator
         //    }
         //}
 
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= MainWindow_Loaded;
             UpdateVisibilityOnConfig();
             Status = "Connecting";
-            Task.Run(TryConnect);
+            await Task.Run(() => TryConnect());
+            //Thread.Sleep(500);
+            //OriginalConfiguration = _commands.GetConfiguration();
             if (OriginalConfiguration == null)
             {
                 Status = "Connection failed";
@@ -86,7 +89,9 @@ namespace FirewallConfigurator
 
         private void TryConnect()
         {
-            OriginalConfiguration = _commands.GetConfiguration();
+
+            if(OriginalConfiguration == null)
+                OriginalConfiguration = _commands.GetConfiguration();
         }
         private void SetCurrentConfiguration(RouterConfiguration originalConfiguration)
         {
