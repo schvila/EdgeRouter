@@ -37,6 +37,8 @@ namespace FirewallConfigurator.Service
         }
         public RouterConfiguration(RouterConfiguration cfg)
         {
+            if (cfg == null)
+                return;
             IP = cfg.IP;
             Port = cfg.Port;
             Address = cfg.Address;

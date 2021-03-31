@@ -11,18 +11,28 @@ namespace FirewallConfigurator.Service
         public RouterCommands()
         {
         }
+        public string LastError { get; private set; }= String.Empty;
         public RouterConfiguration GetConfiguration()
         {
+            LastError = String.Empty;
+            
             ProcessManager processManager = new ProcessManager();
 
-            var res = processManager.Run(PortConfigurator.ConfigReadCommands, 500);
-            // get address
+            var res = processManager.Run(PortConfigurator.ConfigReadCommands, 500, 5000);
+            if (processManager.ConnectionFailed ||string.IsNullOrEmpty(res))
+            {
+                LastError = "Connection failed";
+                return null;
+            }
+
+            // get configuration
             var pcfg = new PortConfigurator(res);
             return pcfg.CurrentRouterConfiguration;
         }
 
         public string WriteConfiguration(RouterConfiguration orgcfg, RouterConfiguration newcfg)
         {
+            LastError = String.Empty;
             PortConfigurator portConfigurator = new PortConfigurator(newcfg);
             var cmdList = portConfigurator.PrepareConfigWriteCommands(orgcfg);
             

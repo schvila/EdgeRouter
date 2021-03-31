@@ -14,6 +14,8 @@ namespace FirewallConfigurator.Service
     public class ProcessManager
     {
         public ConnectInfo ConInfo { get; set; } = new ConnectInfo();
+        //public static string ConnectionFailed = "";
+
 
         //private ProcessIoManager _procManager;
         private ProcessStartInfo _cmdExeProcessStartInfo = new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "cmd.exe"))
@@ -25,8 +27,13 @@ namespace FirewallConfigurator.Service
             CreateNoWindow = true,
             WindowStyle = ProcessWindowStyle.Hidden,
         };
-        public string Run(List<string> cmdList, int sleep)
+        public string Run(List<string> cmdList, int sleep, int logonSleep = 0)
         {
+            if (logonSleep == 0)
+            {
+                logonSleep = sleep;
+            }
+
             using (var proc = Process.Start(_cmdExeProcessStartInfo))
             {
                 var procManager = new ProcessIO(proc);
@@ -43,7 +50,7 @@ namespace FirewallConfigurator.Service
                     // Router connect
                     procType = ProcesType.Logon;
                     procManager.WriteStdin(ConInfo.Connection);
-                    Thread.Sleep(sleep);
+                    Thread.Sleep(logonSleep);
                     if (!LogonFailed())
                     {
                         procType = ProcesType.Command;
@@ -76,10 +83,15 @@ namespace FirewallConfigurator.Service
             return CmdResult;
         }
 
+        public bool ConnectionFailed { get; private set; } = false;
         private bool LogonFailed()
         {
-            if ((_sberror.Length > 0 && _sberror.ToString().Contains("FATAL ERROR")) || !_sblogon.ToString().Contains(ConInfo.User))
+            if ((_sberror.Length > 0 && _sberror.ToString().Contains("FATAL ERROR")) ||
+                !_sblogon.ToString().Contains(ConInfo.User))
+            {
                 logonError = "Logon failed";
+                ConnectionFailed = true;
+            }
 
             return !string.IsNullOrEmpty(logonError);
         }

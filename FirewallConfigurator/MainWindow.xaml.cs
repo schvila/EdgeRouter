@@ -25,7 +25,7 @@ namespace FirewallConfigurator
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private RouterConfiguration OriginalConfiguration { get; set; }
-        private RouterConfiguration CurrentConfiguration { get; set; }
+        private RouterConfiguration CurrentConfiguration { get; set; } = new RouterConfiguration(){Address = "dhcp",};
         private static RouterCommands _commands = new RouterCommands();
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -41,22 +41,63 @@ namespace FirewallConfigurator
             Loaded += MainWindow_Loaded;
         }
 
-        public override void BeginInit()
-        {
-            base.BeginInit();
-            Status = "Connecting";
-            OriginalConfiguration = _commands.GetConfiguration();
-            CurrentConfiguration = new RouterConfiguration(OriginalConfiguration);
-            Status = "Ready";
-        }
+        //public override void BeginInit()
+        //{
+        //    base.BeginInit();
+        //    Status = "Connecting";
+        //    OriginalConfiguration = _commands.GetConfiguration();
+        //    if (OriginalConfiguration == null)
+        //    {
+        //        CurrentConfiguration = new RouterConfiguration()
+        //        {
+        //            Address = "dhcp",
+        //        };
+        //        Status = "Connection failed";
+        //        return;
+        //    }
+        //    else
+        //    {
+        //        CurrentConfiguration = new RouterConfiguration(OriginalConfiguration);
+        //        Status = "Ready";
+
+        //    }
+        //}
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= MainWindow_Loaded;
+            UpdateVisibilityOnConfig();
+            Status = "Connecting";
+            Task.Run(TryConnect);
+            if (OriginalConfiguration == null)
+            {
+                Status = "Connection failed";
+                MessageBox.Show("Connection failed", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Application.Current.Shutdown();
+            }
+            else
+            {
+                SetCurrentConfiguration(OriginalConfiguration);
+            }
+            Status = "Ready";
+            UpdateVisibilityOnConfig();
 
-            UpdateUIOnConfig();
         }
-        
+
+        private void TryConnect()
+        {
+            OriginalConfiguration = _commands.GetConfiguration();
+        }
+        private void SetCurrentConfiguration(RouterConfiguration originalConfiguration)
+        {
+            CurrentConfiguration = new RouterConfiguration(OriginalConfiguration);
+            //WpfDispatcher?
+            //RaisePropertyChanged(nameof(IP));
+            //RaisePropertyChanged(nameof(Port));
+            //RaisePropertyChanged(nameof(Server));
+            //RaisePropertyChanged(nameof(Gateway));
+        }
+
         public bool IsDPHC => CurrentConfiguration == null ? false : CurrentConfiguration.IsDhcp;
 
         public string IP 
@@ -125,7 +166,7 @@ namespace FirewallConfigurator
         {
             //gridStatic.Visibility = Visibility.Hidden;
             CurrentConfiguration.Address = "dhcp";
-            UpdateUIOnConfig();
+            UpdateVisibilityOnConfig();
 
         }
 
@@ -133,10 +174,10 @@ namespace FirewallConfigurator
         {
             //gridStatic.Visibility = Visibility.Visible;
             CurrentConfiguration.Address = "";
-            UpdateUIOnConfig();
+            UpdateVisibilityOnConfig();
 
         }
-        private void UpdateUIOnConfig()
+        private void UpdateVisibilityOnConfig()
         {
             if (IsDPHC)
             {
